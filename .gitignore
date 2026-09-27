@@ -1,0 +1,31 @@
+# Entorno virtual y archivos generados por Python
+.venv/
+__pycache__/
+*.py[cod]
+build/
+dist/
+*.egg-info/
+
+# Credenciales y configuración local (se permite una plantilla sin secretos)
+.env
+.env.*
+!.env.example
+
+# Datos, plantilla con datos y reportes de Excel
+/archivos/
+~$*.xlsx
+/.reporte_*/
+/.validacion_reportes_*/
+
+# Cachés de notebooks y herramientas
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Archivos del sistema operativo
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Se versionan pyproject.toml, uv.lock, .python-version y los notebooks.
