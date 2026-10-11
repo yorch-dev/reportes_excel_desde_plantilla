@@ -1,0 +1,79 @@
+{
+  "fecha": "2026-10-10",
+  "periodo": [
+    "2026-10-08",
+    "2026-10-12"
+  ],
+  "resultado": "PASS",
+  "tablas": {
+    "colas_diario": {
+      "filas": 154,
+      "columnas": 60
+    },
+    "colas": {
+      "filas": 2241,
+      "columnas": 40
+    },
+    "workloads_diario": {
+      "filas": 150,
+      "columnas": 26
+    },
+    "workloads": {
+      "filas": 7200,
+      "columnas": 28
+    },
+    "ejecutivos": {
+      "filas": 2510,
+      "columnas": 37
+    },
+    "estados_agentes": {
+      "filas": 8458,
+      "columnas": 21
+    }
+  },
+  "libros": [
+    {
+      "criterio": "general",
+      "archivo": "reporte_general.xlsx",
+      "filas": {
+        "colas_diario": 154,
+        "colas": 2241,
+        "workloads_diario": 150,
+        "workloads": 7200,
+        "ejecutivos": 2510,
+        "estados_agentes": 8458
+      },
+      "bytes": 2749322
+    },
+    {
+      "criterio": "cliente",
+      "archivo": "reporte_por_cliente_mutual.xlsx",
+      "filas": {
+        "colas_diario": 23,
+        "colas": 278,
+        "workloads_diario": 30,
+        "workloads": 1440,
+        "ejecutivos": 410,
+        "estados_agentes": 1274
+      },
+      "bytes": 475915
+    },
+    {
+      "criterio": "jefe_negocio",
+      "archivo": "reporte_por_jefe_campana_carla_palacios.xlsx",
+      "filas": {
+        "colas_diario": 28,
+        "colas": 348,
+        "workloads_diario": 35,
+        "workloads": 1680,
+        "ejecutivos": 435,
+        "estados_agentes": 1360
+      },
+      "bytes": 535172
+    }
+  ],
+  "alertas_workloads": 93,
+  "pruebas_automatizadas": 19,
+  "alcance": "Muestra de cinco dias; no es validacion de todo el historico ni de 56 dias reales.",
+  "cortes_memoria": "Propietarios calculados una vez; materializacion de un solo grupo por archivo."
+}

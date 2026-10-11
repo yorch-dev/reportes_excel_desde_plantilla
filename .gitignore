@@ -13,6 +13,8 @@ dist/
 
 # Datos, plantilla con datos y reportes de Excel
 /archivos/
+/archivos_por_cliente/
+/archivos_por_jefe/
 ~$*.xlsx
 /.reporte_*/
 /.validacion_reportes_*/

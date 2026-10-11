@@ -1,0 +1,1438 @@
+{
+  "version": 1,
+  "fecha_validacion": "2026-10-10",
+  "muestra_sql": "2026-10-08",
+  "alcance": "Validacion acotada en lectura. No es auditoria de todo el historico ni ejecucion del generador de seis tablas.",
+  "privacidad": "Solo esquemas y conteos agregados; sin RUT, UUID de personas, nombres ni credenciales.",
+  "modo": {
+    "postgresql": "READ ONLY; consultas de un dia y metadatos; timeout 10-30 segundos",
+    "peopleware": "Sin consultas API nuevas; lectura del Excel existente",
+    "excel": "Sin COM; sin modificar libros",
+    "implementacion": "Solo documentacion de continuidad"
+  },
+  "esquemas_sql": {
+    "reporting.datos_colas": [
+      {
+        "column_name": "rendimiento_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "fecha",
+        "data_type": "date",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "intervalo",
+        "data_type": "time without time zone",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "tipo_medios",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "cola_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "id_cola",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "nombre_cola",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "nombre_cola_dimension",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "oferta",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "contestadas",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "abandonadas",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "saliente",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "flujo_saliente",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "velocidad_media_respuesta_seg",
+        "data_type": "numeric",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "porcentaje_nivel_servicio",
+        "data_type": "double precision",
+        "numeric_precision": 53,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "porcentaje_objetivo_nivel_servicio",
+        "data_type": "double precision",
+        "numeric_precision": 53,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "espera_media_seg",
+        "data_type": "numeric",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "manejo_medio_seg",
+        "data_type": "numeric",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "conversacion_media_seg",
+        "data_type": "numeric",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "retencion_media_seg",
+        "data_type": "numeric",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "acw_medio_seg",
+        "data_type": "numeric",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "abandono_medio_seg",
+        "data_type": "numeric",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "manejo",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "retener",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "transferir",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "tiempo_manejo_total",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "cumplen_sla",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "tiempo_conversacion_total",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_retencion_total",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_acw_total",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "abandono_rapido",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "salientes_intentadas",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "campana_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "nombre_campana",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "tmo_objetivo",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "nivel_atencion_objetivo",
+        "data_type": "double precision",
+        "numeric_precision": 53,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "nivel_servicio_objetivo",
+        "data_type": "double precision",
+        "numeric_precision": 53,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "tiempo_maximo_espera_objetivo",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "observaciones_campana",
+        "data_type": "text",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "cliente_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "horario_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "plataforma_operacion_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "jefe_negocio_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "unidad_negocio_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "grupo_facturacion_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "tipo_campana_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "tipo_campana",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "cliente",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "plataforma_operacion",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "unidad_negocio",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "jefe_negocio",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "supervisores",
+        "data_type": "text",
+        "numeric_precision": null,
+        "numeric_scale": null
+      }
+    ],
+    "reporting.datos_colas_diario": [
+      {
+        "column_name": "rendimiento_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "fecha",
+        "data_type": "date",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "tipo_medios",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "cola_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "id_cola",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "nombre_cola",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "nombre_cola_dimension",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "id_division",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "nombre_division",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "porcentaje_objetivo_nivel_servicio",
+        "data_type": "double precision",
+        "numeric_precision": 53,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "oferta",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "contestadas",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "abandono_rapido",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "abandono_no_rapido",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "flujo_saliente",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "cumplen_sla",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "velocidad_media_respuesta_seg",
+        "data_type": "numeric",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "abandono_medio_seg",
+        "data_type": "numeric",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "manejo",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "tiempo_manejo_total",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "conversacion",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "tiempo_conversacion_total",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "retener",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "tiempo_retencion_total",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "acw",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "tiempo_acw_total",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "contactando",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "tiempo_contactando_total",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "marcando",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "tiempo_marcando_total",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "saliente",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "espera",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "tiempo_espera_total",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "transferencia_sin_consulta",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "transferencia_con_consulta",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "consultar",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "devoluciones_llamadas_activas",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "tiempo_devoluciones_llamadas_activas_total",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "medios_entrantes",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "medios_salientes",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "campana_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "nombre_campana",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "tmo_objetivo",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "nivel_atencion_objetivo",
+        "data_type": "double precision",
+        "numeric_precision": 53,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "nivel_servicio_objetivo",
+        "data_type": "double precision",
+        "numeric_precision": 53,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "tiempo_maximo_espera_objetivo",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "observaciones_campana",
+        "data_type": "text",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "cliente_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "horario_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "plataforma_operacion_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "jefe_negocio_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "unidad_negocio_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "grupo_facturacion_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "tipo_campana_id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "tipo_campana",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "cliente",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "plataforma_operacion",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "unidad_negocio",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "jefe_negocio",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "supervisores",
+        "data_type": "text",
+        "numeric_precision": null,
+        "numeric_scale": null
+      }
+    ],
+    "reporting.datos_ejecutivos": [
+      {
+        "column_name": "unidad_planificación",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "rut",
+        "data_type": "text",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "identificador",
+        "data_type": "text",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "fecha",
+        "data_type": "date",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "texto_turno",
+        "data_type": "text",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "tiempo_turno",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_conectado",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_en_la_cola",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_comida",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_conversación_total",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_descanso",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_capacitación",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_ausente",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_inactivo",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_ocupado",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "llamadas_contestadas",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "llamadas_salientes",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "tmo_seg",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "lic_vac_d_adm",
+        "data_type": "text",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "tramo_jornada",
+        "data_type": "text",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "tiempo_disponible",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_comida_programada",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_reunión",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_interactuando",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "ocupación_gen",
+        "data_type": "numeric",
+        "numeric_precision": 8,
+        "numeric_scale": 2
+      },
+      {
+        "column_name": "tiempo_no_responde",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_total_acd",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_en_comunicacion",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "tiempo_fuera_de_la_cola",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "manejo",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "tiempo_manejo_total",
+        "data_type": "numeric",
+        "numeric_precision": 12,
+        "numeric_scale": 4
+      },
+      {
+        "column_name": "Aux objetivo",
+        "data_type": "numeric",
+        "numeric_precision": 5,
+        "numeric_scale": 2
+      },
+      {
+        "column_name": "ausencia_de_conexion",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "fecha (índice de meses)",
+        "data_type": "integer",
+        "numeric_precision": 32,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "fecha (mes)",
+        "data_type": "text",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "supervisor",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "jefe_negocio",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      }
+    ],
+    "reporting.datos_estados_agentes": [
+      {
+        "column_name": "id",
+        "data_type": "bigint",
+        "numeric_precision": 64,
+        "numeric_scale": 0
+      },
+      {
+        "column_name": "fecha",
+        "data_type": "date",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "intervalo",
+        "data_type": "time without time zone",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "id_agente",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "nombre_agente",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "conectado",
+        "data_type": "interval",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "en_la_cola",
+        "data_type": "interval",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "inactivo",
+        "data_type": "interval",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "no_responde",
+        "data_type": "interval",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "fuera_de_la_cola",
+        "data_type": "interval",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "disponible",
+        "data_type": "interval",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "ocupado",
+        "data_type": "interval",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "ausente",
+        "data_type": "interval",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "descanso",
+        "data_type": "interval",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "comida",
+        "data_type": "interval",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "capacitacion",
+        "data_type": "interval",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "interactuando",
+        "data_type": "interval",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "rut",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "supervisor",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "jefe_negocio",
+        "data_type": "character varying",
+        "numeric_precision": null,
+        "numeric_scale": null
+      },
+      {
+        "column_name": "unidad_planificacion",
+        "data_type": "text",
+        "numeric_precision": null,
+        "numeric_scale": null
+      }
+    ]
+  },
+  "fuentes_sql": [
+    {
+      "vista": "reporting.datos_colas",
+      "fecha_muestra": "2026-10-08",
+      "filas": 2241,
+      "columnas_exportadas": 40,
+      "tipado_configuracion_actual_ok": true,
+      "duplicados_clave_filas": 0,
+      "clave_candidata": [
+        "fecha",
+        "intervalo",
+        "id_cola",
+        "tipo_medios"
+      ],
+      "fechas_fuera_muestra": 0,
+      "negativos": {},
+      "no_finitos": {
+        "velocidad_media_respuesta_seg": 0,
+        "porcentaje_nivel_servicio": 0,
+        "porcentaje_objetivo_nivel_servicio": 0,
+        "espera_media_seg": 0,
+        "manejo_medio_seg": 0,
+        "conversacion_media_seg": 0,
+        "retencion_media_seg": 0,
+        "acw_medio_seg": 0,
+        "abandono_medio_seg": 0,
+        "tiempo_manejo_total": 0,
+        "tiempo_conversacion_total": 0,
+        "tiempo_retencion_total": 0,
+        "tiempo_acw_total": 0,
+        "nivel_atencion_objetivo": 0,
+        "nivel_servicio_objetivo": 0
+      },
+      "nulos_clave": {
+        "fecha": 0,
+        "intervalo": 0,
+        "id_cola": 0,
+        "tipo_medios": 0
+      },
+      "minutos_intervalo_distintos": [
+        0,
+        30
+      ],
+      "intervalos_no_30_minutos": 0,
+      "dimensiones_sin_valor": {
+        "nombre_campana": 0,
+        "cliente": 0,
+        "jefe_negocio": 0
+      }
+    },
+    {
+      "vista": "reporting.datos_ejecutivos",
+      "fecha_muestra": "2026-10-08",
+      "filas": 502,
+      "columnas_exportadas": 37,
+      "tipado_configuracion_actual_ok": true,
+      "duplicados_clave_filas": 0,
+      "clave_candidata": [
+        "fecha",
+        "rut"
+      ],
+      "fechas_fuera_muestra": 0,
+      "negativos": {},
+      "no_finitos": {
+        "tiempo_turno": 0,
+        "tiempo_conectado": 0,
+        "tiempo_en_la_cola": 0,
+        "tiempo_comida": 0,
+        "tiempo_conversación_total": 0,
+        "tiempo_descanso": 0,
+        "tiempo_capacitación": 0,
+        "tiempo_ausente": 0,
+        "tiempo_inactivo": 0,
+        "tiempo_ocupado": 0,
+        "tiempo_disponible": 0,
+        "tiempo_comida_programada": 0,
+        "tiempo_reunión": 0,
+        "tiempo_interactuando": 0,
+        "ocupación_gen": 0,
+        "tiempo_no_responde": 0,
+        "tiempo_total_acd": 0,
+        "tiempo_en_comunicacion": 0,
+        "tiempo_fuera_de_la_cola": 0,
+        "tiempo_manejo_total": 0,
+        "Aux objetivo": 0
+      },
+      "nulos_clave": {
+        "fecha": 0,
+        "rut": 0
+      },
+      "rut_normalizado_duplicados_clave_filas": 0,
+      "rut_con_guion": 502
+    },
+    {
+      "vista": "reporting.datos_colas_diario",
+      "fecha_muestra": "2026-10-08",
+      "filas_fuente": 340,
+      "filas_vista": 340,
+      "columnas": 60,
+      "filas_campana_mapeada": 154,
+      "filas_campana_no_mapeada": 186,
+      "filas_sin_dimension_cola": 83,
+      "filas_mapeadas_sin_cliente_o_jefe": 0,
+      "filas_mapeadas_plataforma_distinta_genesys": 0,
+      "filtro_exportacion": "campana_id IS NOT NULL",
+      "clave_candidata": [
+        "fecha",
+        "id_cola",
+        "tipo_medios",
+        "id_division"
+      ],
+      "duplicados_clave_filas": 0,
+      "ids_duplicados": 0,
+      "totales_negativos": 0,
+      "unidades": {
+        "tiempo_totales": "Ocho NUMERIC(12,4), horas decimales con redondeo de la vista",
+        "medias_seg": "Dos NUMERIC, segundos"
+      },
+      "consulta_segundos": 0.52
+    },
+    {
+      "vista": "reporting.datos_estados_agentes",
+      "fecha_muestra": "2026-10-08",
+      "filas_fuente": 10246,
+      "filas_vista": 8458,
+      "columnas": 21,
+      "filas_fuente_sin_mapa_genesys": 1662,
+      "otras_exclusiones_requisitos_vista": 126,
+      "detalle_otras_exclusiones": null,
+      "ids_duplicados": 0,
+      "clave_candidata": [
+        "fecha",
+        "rut",
+        "intervalo"
+      ],
+      "duplicados_clave_filas": 0,
+      "duplicados_clave_fuente": 0,
+      "campos_asociacion_incompletos": 0,
+      "estados_negativos": 0,
+      "conectado_mayor_1800_seg": 0,
+      "conectado_nulo_fuente": 1174,
+      "conectado_nulo_vista": 1046,
+      "rut_con_guion_vista": 0,
+      "intervalos_no_30_minutos_fuente": 0,
+      "minutos_fuente": {
+        "30": 5095,
+        "00": 5151
+      },
+      "segundos_no_cero_fuente": 0,
+      "unidades_estados": "Doce PostgreSQL INTERVAL; exportar segundos totales/3600, conservar NULL",
+      "consulta_segundos": 0.7
+    }
+  ],
+  "workloads": {
+    "fuente": "archivos/reporte_workloads.xlsx",
+    "bytes": 4607842,
+    "ultima_modificacion_utc": "2026-10-10T20:33:48Z",
+    "tabla": "t_workloads",
+    "referencia": "A1:AB40321",
+    "desde": "2026-09-28",
+    "hasta": "2026-10-25",
+    "filas": 40320,
+    "columnas": 28,
+    "workloads": 30,
+    "textos": 8,
+    "numericas_excel": 20,
+    "offset_minutos_observados": [
+      -180
+    ],
+    "clave": [
+      "fecha",
+      "intervalo",
+      "workload_id",
+      "utc_offset_minutos"
+    ],
+    "duplicados_clave": 0,
+    "intervalos_no_30_minutos": 0,
+    "tipos_invalidos": 0,
+    "ids_numericos_no_enteros": 0,
+    "uuid_invalidos": 0,
+    "fechas_invalidas": 0,
+    "negativos": 0,
+    "no_finitos": 0,
+    "archivo_sin_cambios": true,
+    "muestras": [
+      {
+        "fecha": "2026-10-08",
+        "filas": 1440,
+        "workloads": 30,
+        "intervalos_por_workload": 48,
+        "series": {
+          "llamadas_historicas": {
+            "suma_observada": 13042,
+            "valores": 1056,
+            "nulos": 384,
+            "ceros": 594
+          },
+          "contestadas_historicas": {
+            "suma_observada": 11796,
+            "valores": 1056,
+            "nulos": 384,
+            "ceros": 597
+          },
+          "forecast_raw_auto": {
+            "suma_observada": 59,
+            "valores": 144,
+            "nulos": 1296,
+            "ceros": 109
+          },
+          "forecast_auto": {
+            "suma_observada": 59,
+            "valores": 144,
+            "nulos": 1296,
+            "ceros": 109
+          },
+          "forecast_import": {
+            "suma_observada": 1467,
+            "valores": 48,
+            "nulos": 1392,
+            "ceros": 24
+          },
+          "forecast_adjustments": {
+            "suma_observada": 6193,
+            "valores": 96,
+            "nulos": 1344,
+            "ceros": 50
+          },
+          "forecast_operational": {
+            "suma_observada": 12199,
+            "valores": 1008,
+            "nulos": 432,
+            "ceros": 571
+          }
+        },
+        "requerido": {
+          "valores": 912,
+          "nulos": 528,
+          "ceros": 504,
+          "workloads_completos": 19,
+          "workloads_sin_datos": 11,
+          "horas_observadas": 1413.0325,
+          "duplicados_unidad_actividad_intervalo": 0
+        },
+        "tmo_prueba_global": {
+          "historico": {
+            "workloads_peso_completo": 22,
+            "peso": 11796,
+            "media_seg": 293.9307358426585
+          },
+          "raw_auto": {
+            "workloads_peso_completo": 3,
+            "peso": 59,
+            "media_seg": 186.25423728813558
+          },
+          "auto": {
+            "workloads_peso_completo": 3,
+            "peso": 59,
+            "media_seg": 186.25423728813558
+          },
+          "operational": {
+            "workloads_peso_completo": 21,
+            "peso": 12199,
+            "media_seg": 297.6068530207394
+          },
+          "import": {
+            "workloads_volumen_positivo_sin_tmo": 1,
+            "media_seg": null
+          },
+          "adjustments": {
+            "workloads_volumen_positivo_sin_tmo": 2,
+            "media_seg": null
+          },
+          "grupos_peso_parcial": 0
+        }
+      },
+      {
+        "fecha": "2026-10-12",
+        "filas": 1440,
+        "workloads": 30,
+        "intervalos_por_workload": 48,
+        "series": {
+          "llamadas_historicas": {
+            "suma_observada": null,
+            "valores": 0,
+            "nulos": 1440,
+            "ceros": 0
+          },
+          "contestadas_historicas": {
+            "suma_observada": null,
+            "valores": 0,
+            "nulos": 1440,
+            "ceros": 0
+          },
+          "forecast_raw_auto": {
+            "suma_observada": 13086,
+            "valores": 1200,
+            "nulos": 240,
+            "ceros": 813
+          },
+          "forecast_auto": {
+            "suma_observada": 21320,
+            "valores": 1200,
+            "nulos": 240,
+            "ceros": 827
+          },
+          "forecast_import": {
+            "suma_observada": 363,
+            "valores": 48,
+            "nulos": 1392,
+            "ceros": 27
+          },
+          "forecast_adjustments": {
+            "suma_observada": 16453,
+            "valores": 96,
+            "nulos": 1344,
+            "ceros": 64
+          },
+          "forecast_operational": {
+            "suma_observada": 20513,
+            "valores": 1008,
+            "nulos": 432,
+            "ceros": 697
+          }
+        },
+        "requerido": {
+          "valores": 720,
+          "nulos": 720,
+          "ceros": 391,
+          "workloads_completos": 15,
+          "workloads_sin_datos": 15,
+          "horas_observadas": 1059.06,
+          "duplicados_unidad_actividad_intervalo": 0
+        },
+        "tmo_prueba_global": {
+          "raw_auto": {
+            "workloads_peso_completo": 19,
+            "peso": 13086,
+            "media_seg": 232.63159101329666,
+            "workloads_volumen_cero": 6
+          },
+          "auto": {
+            "workloads_peso_completo": 19,
+            "peso": 21320,
+            "media_seg": 302.4999530956848,
+            "workloads_volumen_cero": 6
+          },
+          "operational": {
+            "workloads_peso_completo": 15,
+            "peso": 20513,
+            "media_seg": 308.8197728269878,
+            "workloads_volumen_cero": 6
+          },
+          "import": {
+            "workloads_volumen_positivo_sin_tmo": 1,
+            "media_seg": null
+          },
+          "adjustments": {
+            "workloads_volumen_positivo_sin_tmo": 2,
+            "media_seg": null
+          },
+          "grupos_peso_parcial": 0
+        }
+      }
+    ],
+    "nota_tmo": "Medias globales de prueba con peso completo; no corresponden a una campana.",
+    "contrato_diario": {
+      "columnas_minimas": 26,
+      "eliminar": [
+        "intervalo",
+        "utc_offset_minutos"
+      ],
+      "renombrar": {
+        "requerido": "requerido_horas"
+      },
+      "agregar_opcional": [
+        "requerido_medio",
+        "horas_requerido_cubiertas"
+      ],
+      "calculo_tmo": "Historico ponderado por contestadas; forecast por volumen propio de cada variante; peso cero o TMO ausente con peso positivo => NULL/diagnostico.",
+      "origen_agregacion": "Series API nativas antes de reducir a 30 minutos; procesar por bloques para no conservar toda la historia de intervalos."
+    }
+  },
+  "conclusiones": {
+    "muestra_claves_y_raster": "Sin duplicados ni intervalos fuera de 30 minutos en las muestras revisadas",
+    "colas_diario": "Filtrar campana_id IS NOT NULL y registrar las 186 exclusiones de la muestra",
+    "estados": "Conservar 1046 NULL de conectado, no convertirlos a cero. Alinear el RUT exportado al formato con guion de Ejecutivos, sin modificar Ejecutivos.",
+    "workloads": "Separar diario e intervalos; import/adjustments pueden tener volumen sin TMO y el futuro no tiene historico."
+  },
+  "pendientes": [
+    "Verificar cobertura de todo el historico, sin inferirla de la muestra de un dia.",
+    "Probar agregacion diaria con series nativas de Peopleware: el Excel no conserva arrays, raster nativo, outdated ni volumen descartado antes de normalizar.",
+    "Validar cambios de hora: el Excel revisado solo contiene offset -180 y la muestra SQL no incluye transicion.",
+    "Implementar cargadores y formatos nuevos, seis tablas, preparacion compartida, cortes y los tres frontends del plan.",
+    "Probar seis tablas sobre copia de plantilla y al menos un cliente y un jefe; no se ejecuto hoy."
+  ]
+}
