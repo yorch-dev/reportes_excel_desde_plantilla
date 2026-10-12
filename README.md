@@ -12,12 +12,14 @@ El flujo vigente tiene tres archivos. Usar el entorno `.venv` desde la carpeta d
 
 | Hoja | Tabla | Fuente | Período |
 |---|---|---|---|
-| Colas_diario | `t_colas_diario` | `REPORTING.DATOS_COLAS_DIARIO`, sólo campañas mapeadas | Histórico disponible hasta hoy, con tope de cinco años. |
-| Colas | `t_datos` | `REPORTING.DATOS_COLAS`, filtro Genesys original | Siete semanas cerradas más la actual hasta hoy. |
-| Workloads_diario | `t_workloads_diario` | Series nativas de Peopleware agregadas por día | Histórico disponible desde el 29/09/2025, con tope de cinco años, más el horizonte de forecast. |
-| Workloads | `t_workloads` | Peopleware, salida de 30 minutos | Siete semanas cerradas y seis semanas desde el lunes actual. |
-| Ejecutivos | `t_ejecutivos` | `REPORTING.DATOS_EJECUTIVOS` | Histórico disponible hasta hoy, con tope de cinco años; conserva sus 37 columnas. |
-| Estados_agentes | `t_estados_agentes` | `REPORTING.DATOS_ESTADOS_AGENTES` | Siete semanas cerradas más la actual hasta hoy; sólo observaciones reales. |
+| t_colas_diario | `t_colas_diario` | `REPORTING.DATOS_COLAS_DIARIO`, sólo campañas mapeadas | Histórico disponible hasta hoy, con tope de cinco años. |
+| t_colas_intervalo | `t_colas_intervalo` | `REPORTING.DATOS_COLAS`, filtro Genesys original | Siete semanas cerradas más la actual hasta hoy. |
+| t_workloads_diario | `t_workloads_diario` | Series nativas de Peopleware agregadas por día | Histórico disponible desde el 29/09/2025, con tope de cinco años, más el horizonte de forecast. |
+| t_workloads_intervalo | `t_workloads_intervalo` | Peopleware, salida de 30 minutos | Siete semanas cerradas y seis semanas desde el lunes actual. |
+| t_ejecutivos_diario | `t_ejecutivos_diario` | `REPORTING.DATOS_EJECUTIVOS` | Histórico disponible hasta hoy, con tope de cinco años; conserva sus 37 columnas. |
+| t_estados_agentes_intervalo | `t_estados_agentes_intervalo` | `REPORTING.DATOS_ESTADOS_AGENTES` | Siete semanas cerradas más la actual hasta hoy; sólo observaciones reales. |
+
+Cada hoja de datos y su tabla tienen el mismo nombre, en minúsculas, con prefijo `t_` y sufijo `diario` o `intervalo`. Las hojas adicionales de análisis pueden tener nombres propios.
 
 Estos períodos son la configuración automática de `rev_plantilla_reportes.ipynb`, usando la fecha de Santiago. Las siete semanas cerradas terminan el último domingo; la actual es la octava y se va completando. Las seis semanas de forecast incluyen la actual. Los extremos de fechas son inclusivos. Los diarios incluyen también los días recientes: no sumar entre sí las tablas diarias y las de intervalos.
 

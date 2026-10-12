@@ -16,7 +16,7 @@ from analytics.flujo_reportes import (
 
 
 class VariantesPlantillaTest(unittest.TestCase):
-    def fuente(self, nombre="t_workloads", *, vacia=False):
+    def fuente(self, nombre="t_workloads_intervalo", *, vacia=False):
         df = pl.DataFrame({
             "fecha": [date(2026, 10, 11)],
             "forecast_operational": [123.0],
@@ -25,7 +25,7 @@ class VariantesPlantillaTest(unittest.TestCase):
         })
         if vacia:
             df = df.head(0)
-        return TablaDatos(nombre, "Workloads", df, {"requerido": "0.0000"})
+        return TablaDatos(nombre, nombre, df, {"requerido": "0.0000"})
 
     def metadata(self, fuente, extras, formulas=None):
         return {fuente.nombre: SimpleNamespace(
@@ -34,7 +34,7 @@ class VariantesPlantillaTest(unittest.TestCase):
 
     def test_variantes_ausentes_diarias_e_intervalos_son_nulos_sin_cambiar_datos(self):
         for nombre, alias in (("t_workloads_diario", "version_3"),
-                              ("t_workloads", "version_4")):
+                              ("t_workloads_intervalo", "version_4")):
             with self.subTest(tabla=nombre):
                 fuente = self.fuente(nombre)
                 original = fuente.df.clone()
@@ -107,7 +107,7 @@ class VariantesPlantillaTest(unittest.TestCase):
                 self.assertTrue(resultado.df.equals(fuente.df))
 
     def test_otras_fuentes_no_admiten_columnas_manuales_por_esta_via(self):
-        fuentes = [self.fuente("t_datos"), self.fuente("t_ejecutivos")]
+        fuentes = [self.fuente("t_colas_intervalo"), self.fuente("t_ejecutivos_diario")]
         metadatos = {}
         for fuente in fuentes:
             metadatos.update(self.metadata(fuente, ["forecast_strategic", "tmo_strategic"]))
@@ -180,7 +180,7 @@ class VariantesPlantillaTest(unittest.TestCase):
                 metadatos[archivo] = {}
                 for fuente in fuentes_para(datos):
                     extras = ([f"forecast_{alias}", f"tmo_{alias}"]
-                              if fuente.nombre in ("t_workloads", "t_workloads_diario") else [])
+                              if fuente.nombre in ("t_workloads_intervalo", "t_workloads_diario") else [])
                     metadatos[archivo][fuente.nombre] = SimpleNamespace(
                         hoja=fuente.hoja, encabezados=[*fuente.df.columns, *extras], formulas={},
                     )
@@ -203,7 +203,7 @@ class VariantesPlantillaTest(unittest.TestCase):
                 alias = variantes[llamada.kwargs["plantilla"]]
                 esperadas = {f"forecast_{alias}", f"tmo_{alias}"}
                 for fuente in llamada.args[0]:
-                    if fuente.nombre in ("t_workloads", "t_workloads_diario"):
+                    if fuente.nombre in ("t_workloads_intervalo", "t_workloads_diario"):
                         self.assertEqual(set(fuente.df.columns) - set(self.fuente().df.columns), esperadas)
                         for columna in esperadas:
                             self.assertEqual(fuente.df[columna].to_list(), [None])

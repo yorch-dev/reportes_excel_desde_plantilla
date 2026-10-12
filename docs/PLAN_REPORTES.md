@@ -8,21 +8,20 @@ y la validación integrada en [VALIDACION_IMPLEMENTACION.json](VALIDACION_IMPLEM
 
 ## Contrato de fuentes y tablas
 
-Conservar los nombres actuales de las tablas por intervalo y de Ejecutivos;
-añadir tres tablas sin cambiar el significado de las existentes.
+Las hojas y tablas de datos comparten nombre en minúsculas, con prefijo `t_` y
+sufijo de granularidad. La nomenclatura no cambia el significado de las fuentes.
 
 | Hoja | Tabla | Fuente | Alcance y grano |
 |---|---|---|---|
-| Colas_diario | `t_colas_diario` | `REPORTING.DATOS_COLAS_DIARIO` | Histórico disponible, diario; `campana_id IS NOT NULL`. |
-| Colas | `t_datos` | `REPORTING.DATOS_COLAS` | Siete semanas cerradas más la actual; observaciones por intervalo. |
-| Workloads_diario | `t_workloads_diario` | Peopleware: agregado diario de series originales | Un día por Workload; alcance histórico condicionado a lo que entregue la API. |
-| Workloads | `t_workloads` | Peopleware: datos por intervalo | Siete semanas cerradas y seis desde el lunes actual, a 30 minutos, con desplazamiento UTC. |
-| Ejecutivos | `t_ejecutivos` | `REPORTING.DATOS_EJECUTIVOS` | Histórico disponible de la vista diaria, conservando sus columnas y valores. |
-| Estados_agentes | `t_estados_agentes` | `REPORTING.DATOS_ESTADOS_AGENTES` | Siete semanas cerradas más la actual; observaciones reales de estado/conexión, ya mapeadas. |
+| t_colas_diario | `t_colas_diario` | `REPORTING.DATOS_COLAS_DIARIO` | Histórico disponible, diario; `campana_id IS NOT NULL`. |
+| t_colas_intervalo | `t_colas_intervalo` | `REPORTING.DATOS_COLAS` | Siete semanas cerradas más la actual; observaciones por intervalo. |
+| t_workloads_diario | `t_workloads_diario` | Peopleware: agregado diario de series originales | Un día por Workload; alcance histórico condicionado a lo que entregue la API. |
+| t_workloads_intervalo | `t_workloads_intervalo` | Peopleware: datos por intervalo | Siete semanas cerradas y seis desde el lunes actual, a 30 minutos, con desplazamiento UTC. |
+| t_ejecutivos_diario | `t_ejecutivos_diario` | `REPORTING.DATOS_EJECUTIVOS` | Histórico disponible de la vista diaria, conservando sus columnas y valores. |
+| t_estados_agentes_intervalo | `t_estados_agentes_intervalo` | `REPORTING.DATOS_ESTADOS_AGENTES` | Siete semanas cerradas más la actual; observaciones reales de estado/conexión, ya mapeadas. |
 
-`t_datos`, `t_workloads` y `t_ejecutivos` conservan su grano y significado actual.
-Revisar los cálculos y gráficos al añadir los nuevos diarios, sin renombrar las
-referencias que ya utiliza el usuario.
+Colas, Workloads y Ejecutivos conservan su grano y significado. Los respaldos
+archivados y las evidencias históricas mantienen la nomenclatura de su versión.
 
 El notebook fija `hasta` en hoy, según Santiago, para los datos reales SQL.
 El detalle comienza siete semanas antes del lunes actual: siete semanas completas

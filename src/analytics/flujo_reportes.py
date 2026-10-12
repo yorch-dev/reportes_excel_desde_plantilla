@@ -24,9 +24,9 @@ from .fuentes_sql import (
 FUENTES = ("colas_diario", "colas", "workloads_diario", "workloads", "ejecutivos", "estados_agentes")
 BASE_DIR = Path(__file__).resolve().parents[2]
 CONTRATO_TABLAS = {
-    "t_colas_diario": "Colas_diario", "t_datos": "Colas",
-    "t_workloads_diario": "Workloads_diario", "t_workloads": "Workloads",
-    "t_ejecutivos": "Ejecutivos", "t_estados_agentes": "Estados_agentes",
+    "t_colas_diario": "t_colas_diario", "t_colas_intervalo": "t_colas_intervalo",
+    "t_workloads_diario": "t_workloads_diario", "t_workloads_intervalo": "t_workloads_intervalo",
+    "t_ejecutivos_diario": "t_ejecutivos_diario", "t_estados_agentes_intervalo": "t_estados_agentes_intervalo",
 }
 
 
@@ -103,12 +103,12 @@ def tablas_reportes(datos: dict[str, pl.DataFrame]) -> list[TablaDatos]:
     if set(datos) != set(FUENTES):
         raise ValueError("Se requieren las seis fuentes del reporte.")
     return [
-        TablaDatos("t_colas_diario", "Colas_diario", datos["colas_diario"], formatos_colas_diario()),
-        TablaDatos("t_datos", "Colas", datos["colas"], formatos_colas()),
-        TablaDatos("t_workloads_diario", "Workloads_diario", datos["workloads_diario"], formatos_workloads_diario(datos["workloads_diario"])),
-        TablaDatos("t_workloads", "Workloads", datos["workloads"], formatos_workloads(datos["workloads"])),
-        TablaDatos("t_ejecutivos", "Ejecutivos", datos["ejecutivos"], formatos_ejecutivos()),
-        TablaDatos("t_estados_agentes", "Estados_agentes", datos["estados_agentes"], formatos_estados_agentes()),
+        TablaDatos("t_colas_diario", "t_colas_diario", datos["colas_diario"], formatos_colas_diario()),
+        TablaDatos("t_colas_intervalo", "t_colas_intervalo", datos["colas"], formatos_colas()),
+        TablaDatos("t_workloads_diario", "t_workloads_diario", datos["workloads_diario"], formatos_workloads_diario(datos["workloads_diario"])),
+        TablaDatos("t_workloads_intervalo", "t_workloads_intervalo", datos["workloads"], formatos_workloads(datos["workloads"])),
+        TablaDatos("t_ejecutivos_diario", "t_ejecutivos_diario", datos["ejecutivos"], formatos_ejecutivos()),
+        TablaDatos("t_estados_agentes_intervalo", "t_estados_agentes_intervalo", datos["estados_agentes"], formatos_estados_agentes()),
     ]
 
 
@@ -122,7 +122,7 @@ def _completar_variantes_plantilla(fuentes: list[TablaDatos], metadatos: dict) -
     """
     resultado = []
     for fuente in fuentes:
-        if fuente.nombre not in {"t_workloads_diario", "t_workloads"}:
+        if fuente.nombre not in {"t_workloads_diario", "t_workloads_intervalo"}:
             resultado.append(fuente)
             continue
         meta = metadatos[fuente.nombre]
