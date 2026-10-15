@@ -1,4 +1,4 @@
-"""Cortes por dimensiones usando el mapeo explícito campaña–Peopleware."""
+"""Cortes por dimensiones propias y por el mapa explícito campaña–Peopleware."""
 
 from collections import Counter, defaultdict
 from dataclasses import dataclass
@@ -12,10 +12,13 @@ from sqlalchemy.engine import Engine
 
 
 CRITERIOS = frozenset({"cliente", "jefe_negocio"})
-FUENTES = ("colas_diario", "colas", "workloads_diario", "workloads", "ejecutivos", "estados_agentes")
+_FUENTES_SEIS = ("colas_diario", "colas", "workloads_diario", "workloads", "ejecutivos", "estados_agentes")
+_FUENTES_OCHO = (*_FUENTES_SEIS, "asignaciones", "turnos")
+FUENTES = (*_FUENTES_OCHO, "licencias_vacaciones")
 _FUENTES_ANTERIORES = ("colas", "ejecutivos", "workloads")
 _FUENTES_COLAS = ("colas_diario", "colas")
 _FUENTES_WORKLOADS = ("workloads_diario", "workloads")
+_FUENTES_CAMPANA = ("asignaciones", "turnos", "licencias_vacaciones")
 UNIDAD_EJECUTIVOS = "unidad_planificación"
 UNIDAD_ESTADOS = "unidad_planificacion"
 QUERY_MAPA = text("""
@@ -103,7 +106,7 @@ def nombre_archivo_corte(criterio: str, nombre: str) -> str:
     slug = "_".join(re.findall(r"[a-z0-9]+", texto.casefold()))
     if not slug:
         raise ValueError("Una dimensión no produce un nombre de archivo válido.")
-    prefijo = "reporte_por_cliente" if criterio == "cliente" else "reporte_por_jefe_campana"
+    prefijo = "reporte_por_cliente" if criterio == "cliente" else "reporte_por_jefe"
     archivo = f"{prefijo}_{slug}.xlsx"
     if len(archivo) > 255:
         raise ValueError("Un nombre de archivo de corte supera los 255 caracteres.")
@@ -137,17 +140,23 @@ def preparar_plan_cortes(
     usan planning_unit_id. Ejecutivos y Estados necesitan un nombre exacto
     que identifique un solo ID del mapa. La propiedad de una unidad se evalúa
     contra todo el mapa, incluso campañas sin Colas en el periodo. Unidades
-    ambiguas o sin dimensión se excluyen con diagnóstico. También se admite
-    la entrada anterior de tres fuentes.
+    ambiguas o sin dimensión se excluyen con diagnóstico. Asignaciones, Turnos
+    y Licencias/Vacaciones usan sus propias dimensiones del catálogo completo;
+    sólo los Turnos con asignación vigente se incluyen en los cortes. También
+    se admiten las entradas anteriores de ocho, seis o tres fuentes.
     """
     if criterio not in CRITERIOS:
         raise ValueError(f"Criterio no admitido: {criterio}.")
     if set(datos) == set(FUENTES):
         fuentes = FUENTES
+    elif set(datos) == set(_FUENTES_OCHO):
+        fuentes = _FUENTES_OCHO
+    elif set(datos) == set(_FUENTES_SEIS):
+        fuentes = _FUENTES_SEIS
     elif set(datos) == set(_FUENTES_ANTERIORES):
         fuentes = _FUENTES_ANTERIORES
     else:
-        raise ValueError("Se requieren las seis fuentes, o los DataFrames anteriores colas, ejecutivos y workloads.")
+        raise ValueError("Se requieren las nueve fuentes, las ocho o seis anteriores o los DataFrames colas, ejecutivos y workloads.")
     if not all(isinstance(x, pl.DataFrame) for x in datos.values()):
         raise ValueError("Todas las fuentes deben ser DataFrames.")
     _columnas(mapa, {"planning_unit_id", "unidad_planificacion", "nombre_campana", *CRITERIOS}, "mapa")
@@ -162,6 +171,12 @@ def preparar_plan_cortes(
         unidades_por_fuente["estados_agentes"] = UNIDAD_ESTADOS
     for fuente, columna_unidad in unidades_por_fuente.items():
         _columnas(datos[fuente], {columna_unidad} | ({criterio} if criterio == "jefe_negocio" else set()), fuente)
+    for fuente in _FUENTES_CAMPANA:
+        if fuente in datos:
+            requeridas = {"campana", "campana_id", criterio}
+            if fuente == "turnos":
+                requeridas.add("estado_asignacion")
+            _columnas(datos[fuente], requeridas, fuente)
 
     diagnosticos: Counter = Counter()
 
@@ -262,6 +277,34 @@ def preparar_plan_cortes(
             dueños[fuente].append(propietario)
             if motivo:
                 avisar(fuente, motivo, unidad, uid, jefe_fuente, excluidas=True)
+
+    # Estas fuentes ya traen su asignación desnormalizada desde el catálogo
+    # completo. No dependen de que la campaña tenga una unidad en Peopleware.
+    for fuente in _FUENTES_CAMPANA:
+        if fuente not in datos:
+            continue
+        columnas = ["campana", "campana_id", criterio]
+        if fuente == "turnos":
+            columnas.append("estado_asignacion")
+        for fila in datos[fuente].select(columnas).iter_rows():
+            campana, cid, valor = _etiqueta(fila[0]), fila[1], _etiqueta(fila[2])
+            estado = _etiqueta(fila[3]) if fuente == "turnos" else None
+            if fuente == "turnos" and estado != "asignacion_vigente":
+                motivo = "turno_sin_asignacion_vigente"
+            elif campana is None:
+                motivo = "campana_sin_valor"
+            elif not _id_valido(cid):
+                motivo = "id_campana_invalido"
+            elif valor is None:
+                motivo = "dimension_sin_valor"
+            else:
+                motivo = ""
+            dueños[fuente].append(None if motivo else valor)
+            if motivo:
+                detalle = f"campana={campana or 'NULL'}; campana_id={cid}"
+                if fuente == "turnos":
+                    detalle += f"; estado_asignacion={estado or 'NULL'}"
+                avisar(fuente, motivo, valor=valor, detalle=detalle, excluidas=True)
 
     nombres = sorted({nombre for propietarios_fuente in dueños.values() for nombre in propietarios_fuente if nombre is not None})
     archivos = {nombre: nombre_archivo_corte(criterio, nombre) for nombre in nombres}

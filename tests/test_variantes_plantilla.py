@@ -151,6 +151,8 @@ class VariantesPlantillaTest(unittest.TestCase):
 
     def test_general_cliente_y_jefe_completan_segun_su_propia_plantilla(self):
         datos = {clave: self.fuente().df.clone() for clave in FUENTES}
+        datos["turnos"] = datos["turnos"].with_columns(pl.lit("asignacion_vigente").alias("estado_asignacion"))
+        originales = {clave: df.clone() for clave, df in datos.items()}
         resultado = DatosReportes(
             datos, pl.DataFrame(),
             SimpleNamespace(alertas=pl.DataFrame(), cobertura_diaria=pl.DataFrame()),
@@ -198,8 +200,12 @@ class VariantesPlantillaTest(unittest.TestCase):
                     progreso=lambda mensaje: None,
                 )
             self.assertEqual(resumen["estado"], "completo")
+            self.assertEqual(resumen["actualizacion_excel"], "consultas_modelo_y_pivots")
             self.assertEqual(escribir.call_count, 3)
             for llamada in escribir.call_args_list:
+                self.assertTrue(llamada.kwargs["actualizar_conexiones"])
+                self.assertTrue(llamada.kwargs["ocultar_hojas_datos"])
+                self.assertTrue(callable(llamada.kwargs["progreso"]))
                 alias = variantes[llamada.kwargs["plantilla"]]
                 esperadas = {f"forecast_{alias}", f"tmo_{alias}"}
                 for fuente in llamada.args[0]:
@@ -208,8 +214,8 @@ class VariantesPlantillaTest(unittest.TestCase):
                         for columna in esperadas:
                             self.assertEqual(fuente.df[columna].to_list(), [None])
                     self.assertTrue(fuente.df.select(self.fuente().df.columns).equals(self.fuente().df))
-            for frame in datos.values():
-                self.assertTrue(frame.equals(self.fuente().df))
+            for clave, frame in datos.items():
+                self.assertTrue(frame.equals(originales[clave]))
 
 
 if __name__ == "__main__":

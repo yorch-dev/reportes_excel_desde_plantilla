@@ -1,4 +1,4 @@
-"""Una extracción compartida para la plantilla y los reportes de seis tablas."""
+"""Una extracción compartida para la plantilla y los reportes de nueve tablas."""
 from __future__ import annotations
 
 import argparse
@@ -19,14 +19,19 @@ from .excel_reportes import TablaDatos, generar_libro
 from .fuentes_sql import (
     cargar_fuentes_sql, crear_engine, formatos_colas_diario, formatos_estados_agentes,
 )
+from .asignaciones_turnos import formatos_asignaciones, formatos_turnos
+from .licencias_vacaciones import formatos_licencias_vacaciones
 
 
-FUENTES = ("colas_diario", "colas", "workloads_diario", "workloads", "ejecutivos", "estados_agentes")
+FUENTES = ("colas_diario", "colas", "workloads_diario", "workloads", "ejecutivos", "estados_agentes",
+           "asignaciones", "turnos", "licencias_vacaciones")
 BASE_DIR = Path(__file__).resolve().parents[2]
 CONTRATO_TABLAS = {
     "t_colas_diario": "t_colas_diario", "t_colas_intervalo": "t_colas_intervalo",
     "t_workloads_diario": "t_workloads_diario", "t_workloads_intervalo": "t_workloads_intervalo",
     "t_ejecutivos_diario": "t_ejecutivos_diario", "t_estados_agentes_intervalo": "t_estados_agentes_intervalo",
+    "t_asignaciones_historial": "t_asignaciones_historial", "t_turnos_diario": "t_turnos_diario",
+    "t_licencias_vacaciones": "t_licencias_vacaciones",
 }
 
 
@@ -49,12 +54,14 @@ def cargar_datos(
     base_dir: Path | None = None,
     progreso: Callable[[str], None] | None = print,
 ) -> DatosReportes:
-    """Lee cuatro vistas y la API una vez; devuelve datos sin generar Excel.
+    """Lee siete fuentes SQL y la API una vez; devuelve datos sin generar Excel.
 
     Los diarios conservan todo el rango solicitado. El detalle se acota a las
     últimas semanas de ese rango. Workloads permite un inicio histórico propio
     porque la API puede no conservar la misma historia que PostgreSQL. Su fecha
-    final puede extender el forecast sin ampliar el rango real de las vistas SQL.
+    final puede extender el forecast y los turnos programados sin ampliar el
+    rango real de las otras vistas SQL. Asignaciones y Licencias/Vacaciones
+    conservan el historial completo de sus vistas.
     """
     from .datos_reportes import _validar_rango, cargar_workloads_reportes
 
@@ -77,10 +84,12 @@ def cargar_datos(
     base = BASE_DIR if base_dir is None else Path(base_dir).resolve()
     avisar = progreso or (lambda mensaje: None)
     avisar(f"Diarios: {desde} a {hasta}; intervalos SQL: {inicio_detalle} a {hasta}.")
-    avisar("Consultando las cuatro vistas SQL y el mapa de campañas...")
+    avisar(f"Turnos programados: {desde} a {fin_workloads}; asignaciones y licencias/vacaciones: historial disponible.")
+    avisar("Consultando las siete fuentes SQL y el mapa de campañas...")
     engine = crear_engine(base)
     try:
-        datos = cargar_fuentes_sql(desde, hasta, inicio_detalle, base_dir=base, engine=engine)
+        datos = cargar_fuentes_sql(desde, hasta, inicio_detalle, base_dir=base, engine=engine,
+                                   hasta_turnos=fin_workloads)
         mapa = cargar_mapa_campanas(engine)
     finally:
         engine.dispose()
@@ -92,16 +101,18 @@ def cargar_datos(
     datos = {fuente: datos[fuente] for fuente in FUENTES}
     for fuente, df in datos.items():
         avisar(f"{fuente}: {df.height:,} filas; {df.width} columnas.")
+    sin_asignacion = datos["turnos"].filter(pl.col("estado_asignacion") != "asignacion_vigente").height
+    avisar(f"Turnos sin asignación válida para los cortes: {sin_asignacion:,}; se conservan en el general.")
     avisar(f"Alertas de Workloads: {workloads.alertas.height}.")
     return DatosReportes(datos, mapa, workloads, desde, hasta, inicio_detalle, inicio_workloads, fin_workloads)
 
 
 def tablas_reportes(datos: dict[str, pl.DataFrame]) -> list[TablaDatos]:
-    """Nombres estables para las seis tablas, sin combinar sus granos."""
+    """Nombres estables para las nueve tablas, sin combinar sus granos."""
     from .datos_reportes import formatos_workloads_diario
 
     if set(datos) != set(FUENTES):
-        raise ValueError("Se requieren las seis fuentes del reporte.")
+        raise ValueError("Se requieren las nueve fuentes del reporte.")
     return [
         TablaDatos("t_colas_diario", "t_colas_diario", datos["colas_diario"], formatos_colas_diario()),
         TablaDatos("t_colas_intervalo", "t_colas_intervalo", datos["colas"], formatos_colas()),
@@ -109,6 +120,9 @@ def tablas_reportes(datos: dict[str, pl.DataFrame]) -> list[TablaDatos]:
         TablaDatos("t_workloads_intervalo", "t_workloads_intervalo", datos["workloads"], formatos_workloads(datos["workloads"])),
         TablaDatos("t_ejecutivos_diario", "t_ejecutivos_diario", datos["ejecutivos"], formatos_ejecutivos()),
         TablaDatos("t_estados_agentes_intervalo", "t_estados_agentes_intervalo", datos["estados_agentes"], formatos_estados_agentes()),
+        TablaDatos("t_asignaciones_historial", "t_asignaciones_historial", datos["asignaciones"], formatos_asignaciones()),
+        TablaDatos("t_turnos_diario", "t_turnos_diario", datos["turnos"], formatos_turnos()),
+        TablaDatos("t_licencias_vacaciones", "t_licencias_vacaciones", datos["licencias_vacaciones"], formatos_licencias_vacaciones()),
     ]
 
 
@@ -150,7 +164,7 @@ def _completar_variantes_plantilla(fuentes: list[TablaDatos], metadatos: dict) -
 
 def crear_plantilla(resultado: DatosReportes, destino: str | Path, *, app=None) -> Path:
     """Genera una base nueva; no depende de Excel intermedios ni de otra plantilla."""
-    return generar_libro(tablas_reportes(resultado.datos), destino, app=app)
+    return generar_libro(tablas_reportes(resultado.datos), destino, app=app, ocultar_hojas_datos=True)
 
 
 def _json(ruta: Path, contenido: dict) -> None:
@@ -214,7 +228,8 @@ def generar_reportes(
     """Rellena copias de las plantillas sin repetir las consultas.
 
     Un destino None omite esa clase de salida. Los filtros seleccionan archivos
-    de los cortes; el libro general conserva las seis fuentes completas.
+    de los cortes; el libro general conserva las nueve fuentes completas.
+    Cada copia actualiza consultas, modelo y análisis antes de guardar.
     """
     plantilla = Path(plantilla).resolve()
     clases = [
@@ -258,10 +273,13 @@ def generar_reportes(
         "desde_intervalos": resultado.desde_intervalos.isoformat(),
         "desde_workloads": resultado.desde_workloads.isoformat(),
         "hasta_workloads": (resultado.hasta_workloads or resultado.hasta).isoformat(),
+        "hasta_turnos": (resultado.hasta_workloads or resultado.hasta).isoformat(),
         "fuentes": {k: {"filas": v.height, "columnas": v.width} for k, v in resultado.datos.items()},
         "alertas_workloads": resultado.workloads.alertas.to_dicts(),
         "cobertura_workloads": resultado.workloads.cobertura_diaria.to_dicts(),
         "diagnosticos_cortes": {criterio: plan.diagnosticos.to_dicts() for criterio, _, _, _, plan in planes},
+        "asignacion_turnos": resultado.datos["turnos"].group_by("estado_asignacion").len().sort("estado_asignacion").to_dicts(),
+        "actualizacion_excel": "consultas_modelo_y_pivots",
         "archivos": [], "estado": "en_progreso", "archivo_en_progreso": None,
     }
     ruta = Path(ruta_resumen).resolve() if ruta_resumen else (general.parent if general else planes[0][1]) / "resumen_generacion.json"
@@ -283,7 +301,9 @@ def generar_reportes(
                     fuentes = _completar_variantes_plantilla(
                         tablas_reportes(datos), metadatos_plantillas[modelo],
                     )
-                    generar_libro(fuentes, destino, plantilla=modelo, app=app)
+                    generar_libro(fuentes, destino, plantilla=modelo, app=app,
+                                  ocultar_hojas_datos=True, actualizar_conexiones=True,
+                                  progreso=progreso)
                     resumen["archivos"].append({"criterio": criterio, "nombre": nombre, "archivo": str(destino),
                                                "filas": {k: v.height for k, v in datos.items()}})
                     resumen["archivo_en_progreso"] = None
@@ -302,11 +322,11 @@ def generar_reportes(
 
 def ejecutar(argumentos: list[str] | None = None, base_dir: Path | None = None) -> int:
     base = BASE_DIR if base_dir is None else Path(base_dir).resolve()
-    parser = argparse.ArgumentParser(description="Consulta seis tablas una vez y genera el libro general y los cortes por cliente y jefe_negocio.")
+    parser = argparse.ArgumentParser(description="Consulta nueve tablas una vez y genera el libro general y los cortes por cliente y jefe_negocio.")
     parser.add_argument("--desde", required=True, type=date.fromisoformat, metavar="AAAA-MM-DD", help="Inicio del histórico diario SQL.")
     parser.add_argument("--hasta", type=date.fromisoformat, default=datetime.now(ZoneInfo("America/Santiago")).date(), metavar="AAAA-MM-DD")
     parser.add_argument("--desde-workloads", type=date.fromisoformat, metavar="AAAA-MM-DD", help="Inicio del diario Peopleware; por defecto --desde.")
-    parser.add_argument("--hasta-workloads", type=date.fromisoformat, metavar="AAAA-MM-DD", help="Fin del forecast Peopleware; por defecto --hasta. Puede incluir semanas futuras.")
+    parser.add_argument("--hasta-workloads", type=date.fromisoformat, metavar="AAAA-MM-DD", help="Fin del forecast Peopleware y de los turnos programados; por defecto --hasta. Puede incluir semanas futuras.")
     parser.add_argument("--semanas-intervalos", type=int, default=8)
     parser.add_argument("--desde-intervalos", type=date.fromisoformat, metavar="AAAA-MM-DD", help="Inicio exacto del detalle; permite alinear las semanas al lunes.")
     parser.add_argument("--plantilla", type=Path, default=base / "archivos" / "plantilla_reportes_base.xlsx")

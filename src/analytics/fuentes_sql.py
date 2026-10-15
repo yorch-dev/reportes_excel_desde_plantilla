@@ -1,4 +1,4 @@
-"""Cuatro fuentes SQL con una conexion y sus unidades de exportacion.
+"""Fuentes SQL con una conexion y sus unidades de exportacion.
 
 No conecta ni carga credenciales al importar. Conserva Colas y Ejecutivos;
 Estados convierte las duraciones a horas decimales y presenta RUT con guion.
@@ -23,6 +23,14 @@ from .datos_reportes import (
     _tipos,
     formatos_colas,
     formatos_ejecutivos,
+)
+from .asignaciones_turnos import (
+    CONFIG_ASIGNACIONES, CONFIG_TURNOS, cargar_asignaciones_turnos,
+    formatos_asignaciones, formatos_turnos,
+)
+from .licencias_vacaciones import (
+    CONFIG_LICENCIAS_VACACIONES, cargar_licencias_vacaciones,
+    formatos_licencias_vacaciones,
 )
 
 
@@ -256,14 +264,23 @@ def cargar_fuentes_sql(
     desde_intervalos: date,
     base_dir: str | Path | None = None,
     engine: Engine | None = None,
+    hasta_turnos: date | None = None,
 ) -> dict[str, pl.DataFrame]:
-    """Leer las cuatro vistas en un snapshot PostgreSQL de solo lectura.
+    """Leer las fuentes SQL en un único snapshot de solo lectura.
 
     Los rangos incluyen ambos extremos. Diarios: DESDE..HASTA; detalle:
     DESDE_INTERVALOS..HASTA. No rellena intervalos ni sustituye NULL por cero.
     Si se proporciona engine, su ciclo de vida queda a cargo del caller.
+    Asignaciones conserva su historial completo; Turnos termina en HASTA_TURNOS
+    cuando se especifica ese horizonte, conservando todos sus timestamps.
+    LicenciasVacaciones conserva su historial completo, sin filtros adicionales.
     """
     _validar_fechas(desde, hasta, desde_intervalos)
+    fin_turnos = hasta if hasta_turnos is None else hasta_turnos
+    if not isinstance(fin_turnos, date) or isinstance(fin_turnos, datetime):
+        raise TypeError("HASTA_TURNOS debe ser datetime.date.")
+    if fin_turnos < desde:
+        raise ValueError("HASTA_TURNOS no puede preceder a DESDE.")
     propio = engine is None
     db = crear_engine(base_dir) if propio else engine
     parametros = {"desde": desde, "hasta": hasta, "desde_intervalos": desde_intervalos}
@@ -288,6 +305,8 @@ def cargar_fuentes_sql(
                 inicio = desde_intervalos if clave in ("colas", "estados_agentes") else desde
                 _validar_frame(clave, df, inicio, hasta)
                 resultado[clave] = df
+            resultado.update(cargar_asignaciones_turnos(conn, desde, fin_turnos))
+            resultado["licencias_vacaciones"] = cargar_licencias_vacaciones(conn)
     finally:
         if propio:
             db.dispose()

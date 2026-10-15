@@ -1,8 +1,8 @@
 """Tablas de Polars a Excel, con actualización segura de una plantilla.
 
 Las magnitudes numéricas se escriben sin escalar: las horas siguen siendo horas
-decimales y los segundos siguen siendo segundos. Sólo ``pl.Time`` se representa
-como fracción de día, que es el tipo de hora de Excel.
+decimales y los segundos siguen siendo segundos. ``pl.Time`` se representa como
+fracción de día y ``pl.Datetime`` sin zona como fecha más fracción de día.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from pathlib import Path
 import posixpath
 import re
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING, Mapping, Sequence
+from typing import TYPE_CHECKING, Callable, Mapping, Sequence
 from xml.etree import ElementTree as ET
 from zipfile import ZipFile
 from .archivos_excel import abrir_lectura, copiar_lectura
@@ -155,8 +155,11 @@ def _validar_fuentes(tablas: Sequence[TablaDatos]) -> None:
         if any(tabla.df[c].null_count() != tabla.df.height for c in tabla.columnas_no_recibidas):
             raise ValueError(f"{tabla.nombre}: una columna no recibida contiene datos.")
         for columna, tipo in tabla.df.schema.items():
+            es_fecha_hora = isinstance(tipo, pl.Datetime)
+            if es_fecha_hora and tipo.time_zone is not None:
+                raise ValueError(f"{tabla.nombre}.{columna}: Datetime con zona horaria no soportado.")
             if not (tipo in (pl.String, pl.Date, pl.Time, pl.Boolean, pl.Null)
-                    or tipo.is_integer() or tipo.is_float()):
+                    or es_fecha_hora or tipo.is_integer() or tipo.is_float()):
                 raise ValueError(f"{tabla.nombre}.{columna}: tipo no soportado: {tipo}")
             serie = tabla.df[columna]
             if tipo.is_float() and (serie.is_not_null() & ~serie.is_finite()).any():
@@ -193,6 +196,16 @@ def _para_excel(df: pl.DataFrame, usa_1904: bool) -> pl.DataFrame:
             if not usa_1904:
                 serial = serial - (pl.col(columna) < date(1900, 3, 1)).cast(pl.Int64)
             expresiones.append(serial.alias(columna))
+        elif isinstance(tipo, pl.Datetime):
+            if tipo.time_zone is not None:
+                raise ValueError(f"{columna}: Datetime con zona horaria no soportado.")
+            # Separar día y hora evita pasar el epoch completo ms/us/ns a float.
+            fecha = pl.col(columna).dt.date()
+            serial = fecha.cast(pl.Int64) + _serial_fecha(date(1970, 1, 1), usa_1904)
+            if not usa_1904:
+                serial = serial - (fecha < date(1900, 3, 1)).cast(pl.Int64)
+            fraccion = pl.col(columna).dt.time().cast(pl.Int64) / _NS_DIA
+            expresiones.append((serial + fraccion).alias(columna))
         elif tipo == pl.String:
             # Excel quita este prefijo de entrada; el literal original se valida
             # en XML. Evita coerción de 00123, 1,70758, fechas y cadenas '=...'.
@@ -204,6 +217,7 @@ def _formatos(tabla: TablaDatos) -> dict[str, str]:
     formatos = {}
     for c, tipo in tabla.df.schema.items():
         formatos[c] = ("@" if tipo == pl.String else "dd-mm-yyyy" if tipo == pl.Date
+                       else "dd-mm-yyyy hh:mm:ss" if isinstance(tipo, pl.Datetime)
                        else "hh:mm" if tipo == pl.Time else "0.00" if tipo.is_float() else "0")
     formatos.update(tabla.formatos)
     return formatos
@@ -350,6 +364,8 @@ def _tipo_comparacion(tipo) -> str:
         return "booleano"
     if tipo == pl.Date:
         return "fecha"
+    if isinstance(tipo, pl.Datetime):
+        return "fecha_hora"
     if tipo == pl.Time:
         return "hora"
     return "entero" if tipo.is_integer() else "decimal"
@@ -380,6 +396,12 @@ def _comprobar_valor(celda, esperado, tipo_df, shared, usa_1904, direccion):
         raise ValueError(f"Dato no finito en {direccion}")
     if tipo_df == "fecha":
         numero_esperado = _serial_fecha(esperado, usa_1904)
+    elif tipo_df == "fecha_hora":
+        if esperado.tzinfo is not None:
+            raise ValueError(f"Datetime con zona horaria no soportado en {direccion}")
+        segundos = (esperado.hour * 3600 + esperado.minute * 60 + esperado.second
+                    + esperado.microsecond / 1_000_000)
+        numero_esperado = _serial_fecha(esperado.date(), usa_1904) + segundos / 86_400
     elif tipo_df == "hora":
         numero_esperado = (esperado.hour * 3600 + esperado.minute * 60 + esperado.second
                           + esperado.microsecond / 1_000_000) / 86_400
@@ -389,19 +411,59 @@ def _comprobar_valor(celda, esperado, tipo_df, shared, usa_1904, direccion):
         numero_esperado = esperado
     if tipo_df == "entero":
         coincide = Decimal(valor) == Decimal(esperado)
+    elif tipo_df == "fecha_hora":
+        # Excel puede guardar 15 cifras significativas. Admitir ese redondeo
+        # y dos ULP; mínimo 1 us por la conversión ns -> datetime de Python.
+        # Una tolerancia relativa al día serial admitiría milisegundos.
+        quantum = (10.0 ** (math.floor(math.log10(abs(numero_esperado))) - 14)
+                   if numero_esperado else 0.0)
+        tolerancia = max(1e-6 / 86_400, quantum / 2 + 2 * math.ulp(numero_esperado))
+        coincide = abs(numero - numero_esperado) <= tolerancia
     else:
         coincide = math.isclose(numero, float(numero_esperado), rel_tol=1e-12, abs_tol=1e-9)
     if not coincide:
         raise ValueError(f"Valor alterado en {direccion}")
 
 
+def configurar_hojas_trabajo(libro, tablas: Sequence[TablaDatos]) -> None:
+    """Ocultar datos y abrir el libro en una hoja de trabajo visible.
+
+    Conserva nombres y contenidos de las hojas adicionales y las deja visibles.
+    Crea ``ejemplo_de_uso`` vacía si falta, antes de ocultar cualquier hoja fuente.
+    La ocultación es normal, para permitir mostrar datos desde Excel.
+    """
+    datos = {tabla.hoja.casefold() for tabla in tablas}
+    nombre_trabajo = "ejemplo_de_uso"
+    if nombre_trabajo in datos:
+        raise ValueError("ejemplo_de_uso no puede ser una hoja fuente.")
+    hojas = list(libro.sheets)
+    por_nombre = {hoja.name.casefold(): hoja for hoja in hojas}
+    if faltantes := datos - set(por_nombre):
+        raise ValueError(f"Faltan hojas fuente: {sorted(faltantes)}.")
+    trabajo = por_nombre.get(nombre_trabajo)
+    if trabajo is None:
+        trabajo = libro.sheets.add(nombre_trabajo, after=hojas[-1] if hojas else None)
+        hojas.append(trabajo)
+    # Garantizar una hoja visible y activa antes de ocultar la última de datos.
+    # xlwings enumera Worksheets; Sheets incluye también hojas de gráficos.
+    for hoja in libro.api.Sheets:
+        if hoja.Name.casefold() not in datos:
+            hoja.Visible = -1  # xlSheetVisible
+    trabajo.activate()
+    for hoja in hojas:
+        if hoja.name.casefold() in datos:
+            hoja.api.Visible = 0  # xlSheetHidden, no xlSheetVeryHidden.
+
+
 def verificar_libro(ruta: str | Path, tablas: Sequence[TablaDatos], *,
+                    ocultar_hojas_datos: bool = False,
                     _rangos_anteriores: Mapping[str, tuple[int, int, int]] | None = None) -> dict[str, int]:
     """Comparar todas las celdas fuente mediante ZIP/XML, sin abrir Excel.
 
     Permite hojas, gráficos, fórmulas y tablas adicionales del usuario. Las tablas
     indicadas deben existir en su hoja, conservar las columnas fuente y tener la
     altura exacta (una fila placeholder cuando no hay datos).
+    Con ``ocultar_hojas_datos``, datos ocultos y todas las hojas de trabajo visibles.
     """
     tablas = tuple(tablas)
     _validar_fuentes(tablas)
@@ -413,6 +475,19 @@ def verificar_libro(ruta: str | Path, tablas: Sequence[TablaDatos], *,
         calc = workbook.find("x:calcPr", _NS)
         if calc is not None and calc.get("calcMode", "auto") != "auto":
             raise ValueError("El libro no quedó en cálculo automático.")
+        if ocultar_hojas_datos:
+            hojas = workbook.findall("x:sheets/x:sheet", _NS)
+            datos = {tabla.hoja.casefold() for tabla in tablas}
+            nombres = {hoja.get("name").casefold() for hoja in hojas}
+            if "ejemplo_de_uso" not in nombres or "ejemplo_de_uso" in datos:
+                raise ValueError("Falta una hoja de trabajo ejemplo_de_uso independiente.")
+            if datos - nombres:
+                raise ValueError("Faltan hojas fuente en el libro.")
+            for hoja in hojas:
+                es_dato = hoja.get("name").casefold() in datos
+                esperado = "hidden" if es_dato else "visible"
+                if hoja.get("state", "visible") != esperado:
+                    raise ValueError(f"Visibilidad incorrecta en {hoja.get('name')}: se requiere {esperado}.")
         shared = []
         if "xl/sharedStrings.xml" in z.namelist():
             with z.open("xl/sharedStrings.xml") as archivo:
@@ -492,14 +567,20 @@ def verificar_libro(ruta: str | Path, tablas: Sequence[TablaDatos], *,
 
 
 def generar_libro(tablas: Sequence[TablaDatos], destino: str | Path,
-                   plantilla: str | Path | None = None, app: xw.App | None = None) -> Path:
+                   plantilla: str | Path | None = None, app: xw.App | None = None, *,
+                   ocultar_hojas_datos: bool = False,
+                   actualizar_conexiones: bool = False,
+                   progreso: Callable[[str], None] | None = None) -> Path:
     """Crear/actualizar tablas en una copia y publicar después de verificar XML.
 
     La plantilla y el destino anterior permanecen intactos si hay un fallo. Una
-    instancia ``app`` prestada no se cierra. Sólo se refrescan cachés de pivots
-    locales cuya fuente sea exactamente una de estas tablas, sin RefreshAll.
+    instancia ``app`` prestada no se cierra. Con ``actualizar_conexiones``, se
+    actualizan consultas, modelo y pivots y se espera su finalización antes de
+    guardar. Sin esa opción se conserva el refresco de pivots locales anterior.
     Al reducir una tabla, se limpian los formatos de sus filas retiradas sólo
     dentro del antiguo cuerpo, conservando los elementos externos.
+    Si se pide ocultar datos, conserva visibles las hojas de análisis y crea
+    ``ejemplo_de_uso`` cuando falta, dejándola activa al guardar.
     """
     # El validador ZIP/XML no necesita importar xlwings ni registrar su cleanup.
     import xlwings as xw
@@ -569,18 +650,28 @@ def generar_libro(tablas: Sequence[TablaDatos], destino: str | Path,
                         fuente_cache = cache.SourceData
                         if isinstance(fuente_cache, str) and fuente_cache.casefold() in nombres:
                             cache.MissingItemsLimit = 0  # No retener categorías del corte anterior.
-                            cache.Refresh()
-                for hoja in libro.sheets:
-                    hoja.api.Calculate()
+                            if not actualizar_conexiones:
+                                cache.Refresh()
+                if actualizar_conexiones:
+                    from .actualizacion_excel import refrescar_libro
+
+                    with instancia.properties(display_alerts=False, screen_updating=False):
+                        refrescar_libro(libro, progreso=progreso)
+                else:
+                    for hoja in libro.sheets:
+                        hoja.api.Calculate()
+                if ocultar_hojas_datos:
+                    configurar_hojas_trabajo(libro, tablas)
                 if plantilla is None:
                     libro.save(str(temporal))
                 else:
                     libro.save()
             finally:
                 libro.close()
-        verificar_libro(temporal, tablas, _rangos_anteriores=anteriores)
+        verificar_libro(temporal, tablas, ocultar_hojas_datos=ocultar_hojas_datos,
+                        _rangos_anteriores=anteriores)
         temporal.replace(destino)
     return destino
 
 
-__all__ = ["TablaDatos", "generar_libro", "verificar_libro"]
+__all__ = ["TablaDatos", "configurar_hojas_trabajo", "generar_libro", "verificar_libro"]

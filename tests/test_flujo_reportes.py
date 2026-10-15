@@ -14,10 +14,11 @@ from analytics.flujo_reportes import cargar_datos, ejecutar
 
 
 class FlujoReportesTest(unittest.TestCase):
-    def test_forecast_futuro_no_amplia_el_rango_sql(self):
+    def test_forecast_futuro_amplia_solo_turnos_y_no_los_datos_reales(self):
         engine = Mock()
         sql = {k: pl.DataFrame({"fecha": [date(2026, 10, 8)]})
-               for k in ("colas_diario", "colas", "ejecutivos", "estados_agentes")}
+               for k in ("colas_diario", "colas", "ejecutivos", "estados_agentes", "asignaciones", "turnos", "licencias_vacaciones")}
+        sql["turnos"] = sql["turnos"].with_columns(pl.lit("asignacion_vigente").alias("estado_asignacion"))
         workload = SimpleNamespace(df=sql["colas"], df_diario=sql["colas_diario"], alertas=pl.DataFrame())
         with (patch("analytics.flujo_reportes.crear_engine", return_value=engine),
               patch("analytics.flujo_reportes.cargar_fuentes_sql", return_value=sql) as leer_sql,
@@ -28,6 +29,7 @@ class FlujoReportesTest(unittest.TestCase):
                                      desde_workloads=date(2024, 1, 1),
                                      hasta_workloads=date(2026, 11, 15), progreso=None)
         self.assertEqual(leer_sql.call_args.args[:3], (date(2021, 10, 10), date(2026, 10, 10), date(2026, 8, 17)))
+        self.assertEqual(leer_sql.call_args.kwargs["hasta_turnos"], date(2026, 11, 15))
         self.assertEqual(api.call_args.args[:3], (date(2024, 1, 1), date(2026, 11, 15), date(2026, 8, 17)))
         self.assertEqual(resultado.hasta, date(2026, 10, 10))
         self.assertEqual(resultado.hasta_workloads, date(2026, 11, 15))
@@ -37,7 +39,8 @@ class FlujoReportesTest(unittest.TestCase):
     def test_historia_larga_con_detalle_56_dias_y_workloads_propio(self):
         engine = Mock()
         sql = {k: pl.DataFrame({"fecha": [date(2026, 10, 8)]})
-               for k in ("colas_diario", "colas", "ejecutivos", "estados_agentes")}
+               for k in ("colas_diario", "colas", "ejecutivos", "estados_agentes", "asignaciones", "turnos", "licencias_vacaciones")}
+        sql["turnos"] = sql["turnos"].with_columns(pl.lit("asignacion_vigente").alias("estado_asignacion"))
         workload = SimpleNamespace(df=sql["colas"], df_diario=sql["colas_diario"], alertas=pl.DataFrame())
         with (patch("analytics.flujo_reportes.crear_engine", return_value=engine),
               patch("analytics.flujo_reportes.cargar_fuentes_sql", return_value=sql) as leer_sql,
@@ -47,12 +50,13 @@ class FlujoReportesTest(unittest.TestCase):
                                      desde_workloads=date(2026, 9, 1), progreso=None)
         self.assertEqual(resultado.desde_intervalos, date(2026, 8, 31))
         self.assertEqual(leer_sql.call_args.args[:3], (date(2024, 1, 1), date(2026, 10, 25), date(2026, 8, 31)))
+        self.assertEqual(leer_sql.call_args.kwargs["hasta_turnos"], date(2026, 10, 25))
         self.assertEqual(api.call_args.args[:3], (date(2026, 9, 1), date(2026, 10, 25), date(2026, 9, 1)))
         self.assertEqual(leer_sql.call_count, 1)
         self.assertEqual(api.call_count, 1)
         mapa.assert_called_once_with(engine)
         engine.dispose.assert_called_once()
-        self.assertEqual(len(resultado.datos), 6)
+        self.assertEqual(len(resultado.datos), 9)
 
     def test_cerrar_engine_si_falla_sql_y_no_consultar_api(self):
         engine = Mock()
